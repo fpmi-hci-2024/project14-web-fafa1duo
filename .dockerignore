@@ -7,3 +7,4 @@ __pycache__
 .dockerignore
 Dockerfile
 *.sqlite3
+!packages/

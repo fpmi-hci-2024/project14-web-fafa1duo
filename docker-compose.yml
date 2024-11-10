@@ -1,6 +1,26 @@
-version: '3.8'
-
 services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+      - static_volume:/code/staticfiles
+      - media_volume:/code/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DEBUG=1
+      - DJANGO_SECRET_KEY=your-secret-key
+      - DATABASE_NAME=django_todo
+      - DATABASE_USER=xiaoyue
+      - DATABASE_PASSWORD=zxy191126##
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+    restart: unless-stopped
+
   db:
     image: postgres:13
     volumes:
@@ -8,21 +28,18 @@ services:
     environment:
       - POSTGRES_DB=django_todo
       - POSTGRES_USER=xiaoyue
-      - POSTGRES_PASSWORD=xiaoyue123
+      - POSTGRES_PASSWORD=zxy191126##
     ports:
-      - "5432:5432"
-
-  web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-    environment:
-      - DATABASE_URL=postgres://xiaoyue:xiaoyue123@db:5432/django_todo
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U xiaoyue -d django_todo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+  static_volume:
+  media_volume:
+
